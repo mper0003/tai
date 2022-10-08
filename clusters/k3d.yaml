@@ -1,0 +1,11 @@
+apiVersion: k3d.io/v1alpha4
+kind: Simple
+metadata:
+  name: k3d-local
+image: rancher/k3s:v1.23.10-rc1-k3s1
+servers: 1 # control plane
+agents: 2 # worker nodes
+ports:
+  - port: 80:80
+    nodeFilters:
+      - loadbalancer

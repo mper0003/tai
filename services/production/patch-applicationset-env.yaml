@@ -1,0 +1,11 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: mper0003-repositories
+  namespace: argocd
+spec:
+  template:
+    spec:
+      source:
+        directory:
+          include: production/

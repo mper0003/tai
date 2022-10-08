@@ -1,0 +1,13 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+metadata:
+  name: applicationset-prod
+commonLabels:
+  environment: production
+nameSuffix: -prod
+
+resources:
+  - ../base
+patchesStrategicMerge:
+  - patch-applicationset-env.yaml
+  - patch-tai-application-env.yaml
