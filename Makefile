@@ -70,3 +70,8 @@ PHONY: argocd-github-auth
 argocd-github-auth:
 		@echo "\n🛠️ Generating and applying ArgoCD GitHub App secret."
 		 cat ./target/secret.json | ./scripts/argocd-github-auth.sh  | kubectl apply -f -
+
+PHONY: argocd-github-auth-delete
+argocd-github-auth-delete:
+		@echo "\n🛠️ Deleting ArgoCD GitHub App secret."
+		 cat ./target/secret.json | ./scripts/argocd-github-auth.sh  | kubectl delete -f -

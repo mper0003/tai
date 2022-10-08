@@ -21,7 +21,5 @@ spec:
         repoURL: 'https://github.com/mper0003/{{repo}}.git'
         targetRevision: master
         path: '.tai/'
-        directory:
-          include: '<environment/>'
       destination:
         server: https://kubernetes.default.svc
