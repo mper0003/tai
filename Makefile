@@ -1,6 +1,8 @@
 SHELL = /usr/bin/env bash -o pipefail
 
 argocd_version := 2.4.12
+kubevela_version := 1.6.1
+kubevela_version_crds := 1.6
 
 # type of local cluster you would like to run, i.e. kind, k3d, minikube
 CLUSTER_TYPE ?=k3d
@@ -37,7 +39,7 @@ delete-cluster:
 		 k3d cluster delete --config clusters/k3d.yaml
 
 PHONY: install-argocd
-install-argocd:
+install-argocd: upgrade-components
 		@echo "\n♻️  Installing ArgoCD v$(argocd_version)..."
 		kustomize build platform/overlays/k3d-argocd/ | kubectl apply -f -
 
@@ -75,3 +77,48 @@ PHONY: argocd-github-auth-delete
 argocd-github-auth-delete:
 		@echo "\n🛠️ Deleting ArgoCD GitHub App secret."
 		 cat ./target/secret.json | ./scripts/argocd-github-auth.sh  | kubectl delete -f -
+
+PHONY: vela-crds
+vela-crds:
+		curl -s https://raw.githubusercontent.com/oam-dev/kubevela/release-${kubevela_version_crds}/charts/vela-core/crds/core.oam.dev_applicationrevisions.yaml > platform/base/kubevela/core.oam.dev_applicationrevisions.yaml
+		curl -s https://raw.githubusercontent.com/oam-dev/kubevela/release-${kubevela_version_crds}/charts/vela-core/crds/core.oam.dev_applications.yaml > platform/base/kubevela/core.oam.dev_applications.yaml
+		curl -s https://raw.githubusercontent.com/oam-dev/kubevela/release-${kubevela_version_crds}/charts/vela-core/crds/core.oam.dev_componentdefinitions.yaml > platform/base/kubevela/core.oam.dev_componentdefinitions.yaml
+		curl -s https://raw.githubusercontent.com/oam-dev/kubevela/release-${kubevela_version_crds}/charts/vela-core/crds/core.oam.dev_definitionrevisions.yaml > platform/base/kubevela/core.oam.dev_definitionrevisions.yaml
+		curl -s https://raw.githubusercontent.com/oam-dev/kubevela/release-${kubevela_version_crds}/charts/vela-core/crds/core.oam.dev_resourcetrackers.yaml > platform/base/kubevela/core.oam.dev_resourcetrackers.yaml
+		curl -s https://raw.githubusercontent.com/oam-dev/kubevela/release-${kubevela_version_crds}/charts/vela-core/crds/core.oam.dev_envbindings.yaml > platform/base/kubevela/core.oam.dev_envbindings.yaml
+		curl -s https://raw.githubusercontent.com/oam-dev/kubevela/release-${kubevela_version_crds}/charts/vela-core/crds/core.oam.dev_healthscopes.yaml > platform/base/kubevela/core.oam.dev_healthscopes.yaml
+		curl -s https://raw.githubusercontent.com/oam-dev/kubevela/release-${kubevela_version_crds}/charts/vela-core/crds/core.oam.dev_policies.yaml > platform/base/kubevela/core.oam.dev_policies.yaml
+		curl -s https://raw.githubusercontent.com/oam-dev/kubevela/release-${kubevela_version_crds}/charts/vela-core/crds/core.oam.dev_policydefinitions.yaml > platform/base/kubevela/core.oam.dev_policydefinitions.yaml
+		curl -s https://raw.githubusercontent.com/oam-dev/kubevela/release-${kubevela_version_crds}/charts/vela-core/crds/core.oam.dev_scopedefinitions.yaml > platform/base/kubevela/core.oam.dev_scopedefinitions.yaml
+		curl -s https://raw.githubusercontent.com/oam-dev/kubevela/release-${kubevela_version_crds}/charts/vela-core/crds/core.oam.dev_traitdefinitions.yaml > platform/base/kubevela/core.oam.dev_traitdefinitions.yaml
+		curl -s https://raw.githubusercontent.com/oam-dev/kubevela/release-${kubevela_version_crds}/charts/vela-core/crds/core.oam.dev_workflows.yaml > platform/base/kubevela/core.oam.dev_workflows.yaml
+		curl -s https://raw.githubusercontent.com/oam-dev/kubevela/release-${kubevela_version_crds}/charts/vela-core/crds/core.oam.dev_workflowstepdefinitions.yaml > platform/base/kubevela/core.oam.dev_workflowstepdefinitions.yaml
+		curl -s https://raw.githubusercontent.com/oam-dev/kubevela/release-${kubevela_version_crds}/charts/vela-core/crds/core.oam.dev_workloaddefinitions.yaml > platform/base/kubevela/core.oam.dev_workloaddefinitions.yaml
+		curl -s https://raw.githubusercontent.com/oam-dev/kubevela/release-${kubevela_version_crds}/charts/vela-core/crds/standard.oam.dev_rollouts.yaml  > platform/base/kubevela/standard.oam.dev_rollouts.yaml
+
+PHONY: upgrade-kubevela
+upgrade-kubevela: vela-crds
+	@echo "\n🛠️ Updating chart for KubeVela $(kubevela_version)."
+	@helm repo add kubevela https://charts.kubevela.net/core
+	@helm repo update
+	@echo "\n🛠️ Updating chart for KubeVela $(kubevela_version)."
+	@helm template -n vela-system kubevela kubevela/vela-core --version ${kubevela_version} > platform/base/kubevela/install.yaml
+
+PHONY: install-kubevela
+install-kubevela: upgrade-kubevela
+	@echo "\n🛠️ Installing KubeVela $(kubevela_version)..."
+	kubectl apply -f platform/base/kubevela/namespace.yaml
+	kustomize build platform/overlays/k3d-vela/ | kubectl apply -f -
+
+PHONY: uninstall-kubevela
+uninstall-kubevela:
+		@echo "\n🛠️ Uninstalling KubeVela $(kubevela_version)..."
+		kustomize build platform/overlays/k3d-vela/ | kubectl delete -f -
+
+PHONY: k3d-vela-up
+k3d-vela-up: create-cluster install-kubevela
+	@echo "\n🎉️ Successfully setup Kubernetes cluster 'k3d-local' with KubeVela!"
+
+PHONY: k3d-vela-down
+k3d-vela-down: uninstall-kubevela delete-cluster
+		@echo "\n🎉 Successfully teared down Kubernetes cluster 'k3d-local' with KubeVela!"

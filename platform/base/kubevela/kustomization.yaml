@@ -1,0 +1,25 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+metadata:
+  name: base-kubevela
+commonLabels:
+  owner: mper0003
+namespace: vela-system
+resources:
+  - namespace.yaml
+  - core.oam.dev_applicationrevisions.yaml
+  - core.oam.dev_applications.yaml
+  - core.oam.dev_componentdefinitions.yaml
+  - core.oam.dev_definitionrevisions.yaml
+  - core.oam.dev_envbindings.yaml
+  - core.oam.dev_healthscopes.yaml
+  - core.oam.dev_policies.yaml
+  - core.oam.dev_policydefinitions.yaml
+  - core.oam.dev_resourcetrackers.yaml
+  - core.oam.dev_scopedefinitions.yaml
+  - core.oam.dev_traitdefinitions.yaml
+  - core.oam.dev_workflows.yaml
+  - core.oam.dev_workflowstepdefinitions.yaml
+  - core.oam.dev_workloaddefinitions.yaml
+  - standard.oam.dev_rollouts.yaml
+  - install.yaml

@@ -1,0 +1,5 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - github.com/open-policy-agent/gatekeeper-library/library/general/poddisruptionbudget?ref=0d74f529c8c2ba509cf077518d0f72c0c48440f9
+  - constraints.yaml
