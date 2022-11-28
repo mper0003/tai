@@ -1,0 +1,34 @@
+spec:
+  template:
+    spec:
+      # 1. Define an emptyDir volume which will hold the custom binaries
+      volumes:
+        - name: custom-tools
+          emptyDir: {}
+        - name: vela-kubeconfig
+          configMap:
+            name: vela-kubeconfig
+      # 2. Use an init container to download/copy custom binaries
+      initContainers:
+        - name: download-tools
+          image: oamdev/vela-cli:v1.6.3
+          command: [sh, -c]
+          args:
+            - cp /bin/vela /custom-tools/vela
+          volumeMounts:
+            - mountPath: /custom-tools
+              name: custom-tools
+      # 3. Volume mount the custom binary to the bin directory
+      containers:
+        - name: argocd-repo-server
+          env:
+            - name: KUBECONFIG
+              value: /home/argocd/.kube/config
+          volumeMounts:
+            - mountPath: /usr/local/bin/vela
+              name: custom-tools
+              subPath: vela
+            - mountPath: /home/argocd/.kube/
+              name: vela-kubeconfig
+# Run the following command to patch the argo-repo-server deployment
+# kubectl -n argocd patch deploy/argocd-repo-server -p "$(cat target/vela/argo-repo-server-patch.yaml)"

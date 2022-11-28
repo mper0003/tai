@@ -1,0 +1,36 @@
+spec:
+  template:
+    spec:
+      containers:
+        - name: vela-cmp
+          command: [ /var/run/argocd/argocd-cmp-server ] # Entrypoint should be Argo CD lightweight CMP server i.e. argocd-cmp-server
+          image: oamdev/vela-cli:v1.6.2 # This can be off-the-shelf or custom-built image
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 999
+          volumeMounts:
+            - mountPath: /var/run/argocd
+              name: var-files
+            - mountPath: /home/argocd/cmp-server/plugins
+              name: plugins
+            - mountPath: /.vela
+              name: vela-dir
+            # Remove this volumeMount if you've chosen to bake the config file into the sidecar image.
+            - mountPath: /home/argocd/cmp-server/config/plugin.yaml
+              subPath: plugin.yaml
+              name: vela-cmp
+            # Starting with v2.4, do NOT mount the same tmp volume as the repo-server container. The filesystem separation helps
+            # mitigate path traversal attacks.
+            - mountPath: /tmp
+              name: cmp-tmp
+      volumes:
+        - configMap:
+            name: vela-cmp
+          name: vela-cmp
+        - emptyDir: {}
+          name: cmp-tmp
+        - emptyDir: {}
+          name: vela-dir
+      # Run the following command to patch the argo-repo-server deployment
+      # kubectl -n argocd patch deploy/argocd-repo-server -p "$(cat target/vela/vela-sidecar/argo-repo-server-patch.yaml)"
+

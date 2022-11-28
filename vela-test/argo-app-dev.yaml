@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  labels:
+    environment: development
+    owner: mper0003
+  name: mper0003-repositories-dev
+  namespace: argocd
+spec:
+  generators:
+  - list:
+      elements:
+      - repo: reference-app
+  template:
+    metadata:
+      name: '{{repo}}'
+    spec:
+      destination:
+        server: https://kubernetes.default.svc
+      project: default
+      source:
+        path: .tai/development/
+        repoURL: https://github.com/mper0003/{{repo}}.git
+        targetRevision: main
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true

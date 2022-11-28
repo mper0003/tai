@@ -1,0 +1,11 @@
+data:
+  configManagementPlugins: |
+    - name: vela
+      init:
+        command: ["sh", "-xc"]
+        args: ["/usr/local/bin/vela version"]
+      generate:
+        command: ["sh", "-xc"]
+        args: ["vela dry-run"]
+# run the following command to patch the argo-cm configmap
+# kubectl -n argocd patch cm/argocd-cm -p "$(cat target/vela/argo-cm-patch.yaml)"

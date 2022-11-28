@@ -1,0 +1,15 @@
+apiVersion: core.oam.dev/v1beta1
+kind: Application
+metadata:
+  name: simple-app
+spec:
+  components:
+    - name: simple-app
+      type: webservice
+      properties:
+        image: vfarcic/devops-toolkit-series
+        port: 80
+      traits:
+        - type: ingress
+          properties:
+            domain: simple-app.example.com
