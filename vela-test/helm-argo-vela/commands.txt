@@ -1,0 +1,2 @@
+helmfile apply
+helmfile destroy

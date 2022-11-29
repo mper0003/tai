@@ -16,7 +16,7 @@ spec:
             - |
               #!/usr/bin/env bash
               set -eo pipefail
-              curl -fsSl https://kubevela.io/script/install.sh | bash -s 1.6.3 && /custom-tools/vela traits
+              curl -fsSl https://kubevela.io/script/install.sh | bash -s 1.6.3
           image: nginx:1.21.6 # To use bash + curl
           name: kubevela
           env:
@@ -38,4 +38,4 @@ spec:
 #            - mountPath: /home/argocd/.kube/
 #              name: vela-kubeconfig
 # Run the following command to patch the argo-repo-server deployment
-# kubectl -n argocd patch deploy/argocd-repo-server -p "$(cat target/vela/initcontainer/argo-repo-server-patch.yaml)"
+# kubectl -n argocd patch deploy/argocd-repo-server -p "$(cat vela-test/vela/initcontainer/argo-repo-server-patch.yaml)"
