@@ -1,0 +1,31 @@
+apiVersion: core.oam.dev/v1alpha1
+kind: Policy
+metadata:
+  name: topology-local
+type: topology
+properties:
+  clusters: [ "local" ]
+---
+apiVersion: core.oam.dev/v1alpha1
+kind: Policy
+metadata:
+  name: override-domain
+type: override
+properties:
+  components:
+    - type: webservice
+      traits:
+        - type: my-ingress
+          properties:
+            domain: "my-app.dev.example.com"
+---
+apiVersion: core.oam.dev/v1alpha1
+kind: Workflow
+metadata:
+  name: release
+steps:
+  - type: deploy
+    name: release
+    properties:
+      auto: true
+      policies: ["topology-local", "override-domain"]

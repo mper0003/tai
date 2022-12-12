@@ -1,0 +1,48 @@
+apiVersion: core.oam.dev/v1beta1
+kind: TraitDefinition
+metadata:
+  annotations:
+    definition.oam.dev/alias: ""
+    definition.oam.dev/description: My specific ingress trait definition.
+  labels: {}
+  name: my-ingress
+  namespace: vela-system
+spec:
+  appliesToWorkloads: []
+  conflictsWith: []
+  podDisruptive: false
+  schematic:
+    cue:
+      template: |
+        parameter: domain: string
+        outputs: service: {
+        	apiVersion: "v1"
+        	kind:       "Service"
+        	spec: {
+        		selector: app: context.name
+        		ports: [
+        			{
+        				port:       80
+        				targetPort: 80
+        			},
+        		]
+        	}
+        }
+        outputs: ingress: {
+        	apiVersion: "networking.istio.io/v1beta1"
+        	kind:       "VirtualService"
+        	metadata: name: context.name
+        	spec: {
+        		hosts: [parameter.domain]
+        		gateways: [
+        			"istio-system/external",
+        		]
+        		http: [{
+        			route: [{
+        				destination: host: context.name
+        			}]
+        			timeout: "30s"
+        		}]
+        	}
+        }
+  workloadRefPath: ""

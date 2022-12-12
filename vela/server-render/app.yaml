@@ -1,0 +1,21 @@
+
+apiVersion: core.oam.dev/v1beta1
+kind: Application
+metadata:
+  name: my-app
+  namespace: default
+spec:
+  components:
+    - name: my-app
+      type: webservice
+      properties:
+        image: docker.io/kennethreitz/httpbin
+        imagePullPolicy: IfNotPresent
+        ports:
+          - port: 80
+      traits:
+        - type: my-ingress
+          properties:
+              domain: "replace-me"
+  workflow:
+    ref: release
